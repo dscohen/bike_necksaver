@@ -90,25 +90,76 @@ FOV ≈ aperture ÷ eye-to-device distance. A 75mm optic at ~500mm gives
 about 8.5°, i.e. roughly 3m of road width at 20m out. Aperture is the only
 real lever on FOV — it's why the Pedi-Scope used the whole handlebar width.
 
+Note that aperture is the mirror's *foreshortened* extent, not its
+physical size: `aperture = mirror length × cos(incidence)`. See the
+normal-tilt-vs-incidence section below before trusting any aperture
+number.
+
 ## Two-mirror correction
 
 Two mirrors, net deviation = 2 × dihedral angle between them, so:
 
 ```
 dihedral = θ / 2
-i1 − i2 = θ / 2        (i1, i2 = each mirror's incidence angle)
-clear length = aperture / cos(incidence)
+φ1 − φ2 = θ / 2        (φ1, φ2 = each mirror normal's tilt from vertical)
+clear aperture = mirror length × cos(incidence)
 ```
 
-Keep both incidence angles under ~55° or foreshortening makes the mirrors
-enormous. This is what `periscope.scad`'s `mirror_count = 2` path
-computes.
+### Normal tilt is not the angle of incidence
+
+This bit is easy to get wrong, and getting it wrong silently inflates
+every aperture number. The dihedral relation above is about the mirrors'
+**normal tilts**. Foreshortening is about each mirror's **angle of
+incidence**, which is a different angle. At θ=60° the single-mirror
+solution has its normal tilted 30° from vertical but sits at **60°** of
+incidence — so the real foreshortening is 2×, not the 1.15× you'd get by
+plugging the tilt into the cosine.
+
+The reliable way to get both is to stop reasoning in angles and trace the
+rays. A mirror turning ray **d** into ray **d′** has unit normal
+
+```
+n = unit(d′ − d)          incidence = acos(−d · n)
+```
+
+which is exactly what `periscope.scad` does — it builds `n1`, `n2` from
+the traced directions and derives the tilts and incidences from them, so
+the two can't drift apart.
+
+### The real constraint: turn angle vs. aperture
+
+A mirror that turns a ray by angle T sits at incidence `i = (180° − T)/2`.
+So a *small* turn demands a *grazing* mirror. The two turns must sum to θ,
+which means you cannot have both mirrors turning gently — and gentle turns
+are precisely the ones that eat the aperture.
+
+Splitting the fold as a zigzag is what makes it work: send the ray steeply
+*up* out of mirror 1, then turn it back down to horizontal at mirror 2.
+The single knob controlling this is the elevation of the ray between the
+mirrors (`mid_elevation` in the model). At θ=60°, with 152mm of usable
+mirror:
+
+| ray between mirrors | incidence M1 / M2 | aperture | FOV | M2 sits |
+|---|---|---|---|---|
+| 20° | 50° / 80° | 26mm | 3.0° | forward, barely up |
+| 40° | 40° / 70° | 52mm | 5.9° | mostly forward |
+| 60° | 30° / 60° | 76mm | 8.6° | up and forward |
+| 75° | 22.5° / 52.5° | 92mm | 10.5° | nearly straight up |
+| 90° | 15° / 45° | 107mm | 12.1° | straight up (vertical mast) |
+
+The consequence is unavoidable and worth internalizing before building:
+**a corrected-vision periscope has to be tall.** Any attempt to keep it
+low and forward drives mirror 2 toward grazing incidence and collapses the
+field of view to nothing. The model defaults to 75°.
 
 ### What it costs
 
-- **Volume roughly triples.** Example: θ=60°, i1=45°, 80mm aperture gives
-  M1 ≈ 113mm, M2 ≈ 83mm clear length, stacked ~90mm apart — call it
-  140×130×150mm hanging off the front of the bar.
+- **Volume roughly triples.** With the full 160mm stock mirror on the fold
+  axis, the seats are ~169mm long, so they need ~195mm of separation not
+  to intersect — putting mirror 2 about 190mm above mirror 1 and the whole
+  object ~330mm tall above the mount. Setting `fold_axis = "width"` puts
+  the 100mm side on the fold instead: ~233mm tall, at reduced aperture.
+  That tradeoff is the main thing to decide before printing.
 - **Weight**, hence thin (3mm) mirror stock rather than thicker acrylic —
   two 6mm mirrors at that size is ~200g on a long moment arm; 3mm gets
   that to ~100g, with the printed frame supporting the mirror at three
