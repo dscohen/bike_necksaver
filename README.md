@@ -1,90 +1,86 @@
 # bike_necksaver
 
-A 3D-printable bike periscope: a mirror-based device that lets you see the
-road while riding with your head pitched down (aero position, or a neck
-that can't hold extension for the whole ride). See
-[docs/design-notes.md](docs/design-notes.md) for the full optics
-derivation — why belay glasses and prisms don't work for this, why a
-single mirror inverts the image, and the math behind the two-mirror
-corrected version.
+A 3D-printable bike periscope: an enclosed two-mirror box that hangs
+below and ahead of the stem and lets you see the road while riding with
+your head pitched down (aero position, or a neck that can't hold
+extension for the whole ride). You look down into a hooded window on
+top; the view of the road ahead comes out a window on the front. Two
+reflections, so the image is upright. See
+[docs/design-notes.md](docs/design-notes.md) for the optics — why a
+single mirror always inverts the image, why belay glasses don't disprove
+that, why buying a prism instead is a dead end, and why the box hangs
+*below* the bars rather than standing up in front of your face.
 
 ## Status
 
 The two-mirror periscope (`mirror_count = 2`) is the design and the
-default. A single reflection always inverts the vertical image, no
-mounting trick avoids it, and buying a ready-made even-reflection prism
-instead turns out to be a dead end on weight — both investigated and
-written up in the design notes.
+default. Nothing has been printed yet.
 
-- **v1 — single-mirror test rig** (`mirror_count = 1`). Not a candidate
-  design. It answers the one question the math can't — whether you can
-  *adapt* to the vertical inversion — and it's how you measure your real
-  head-pitch angle (θ), which sets every dimension in v2.
-- **v2 — two-mirror periscope.** Corrects the inversion, at the cost of
-  roughly 3x the volume and tighter build tolerances. Not yet built —
-  waiting on a measured θ from the v1 rig. Be aware going in that a
-  corrected-vision periscope is necessarily *tall* (mirror 2 ends up well
-  above mirror 1); keeping it low and forward drives the second mirror to
-  grazing incidence and collapses the field of view. The design notes work
-  through why.
+- **Test box** (`mirror_count = 1`). Not a candidate design — one
+  reflection, so the image is vertically inverted. It exists to answer the
+  one question the math can't (whether you can *adapt* to the inversion)
+  and to measure your real head-pitch angle θ, which sets every dimension
+  of the real thing.
+- **The periscope** (`mirror_count = 2`). Waiting on a measured θ.
 
 ## Bill of materials
 
-- 1x (v1) or 2x (v2) **acrylic mirror tile, 160mm × 100mm (6.3" × 3.94"),
-  ~3mm thick** — off-the-shelf, no custom cutting. Confirm the actual
-  thickness of whatever you buy against `mirror_thickness` in
-  `periscope.scad`.
-- M5 (or M4, check your stem) bolts for the faceplate mount — reuses your
-  stem's existing faceplate bolts/holes.
-- 3D printed housing (`periscope.scad`), PETG or similar recommended over
-  PLA for outdoor/vibration durability.
+- 2x (or 1x for the test box) **acrylic mirror tile, 160mm × 100mm
+  (6.3" × 3.94"), ~3mm thick** — off-the-shelf, no cutting. Confirm the
+  actual thickness of what you buy against `mirror_thickness`.
+- 3D-printed box + 2 caps (`periscope.scad`). PETG or ASA over PLA for
+  outdoor use. Print the box in black, or paint the inside matte black —
+  it's a light tube and glare off the walls is the enemy.
+- Reuses your stem's own faceplate bolts (M5 typical; some are M4 — check).
 
-## Building the housing
+## Building it
 
-Requires [OpenSCAD](https://openscad.org/).
+Requires [OpenSCAD](https://openscad.org/). With the file open, the
+console prints the derived optics every render — incidence angles,
+aperture, field of view, mirror separation, and how far the entry beam
+clears the mount. Read those before printing anything.
 
 ```
-openscad periscope.scad
+openscad -o periscope.stl periscope.scad                       # the box
+openscad -o caps.stl      periscope.scad -D 'part="caps"'      # the two caps
+openscad -o testbox.stl   periscope.scad -D mirror_count=1     # the test box
 ```
 
-Key parameters (edit at the top of `periscope.scad`, or override with
-`-D name=value` on the command line):
+Set `cutaway = true` in the file (preview mode, F5) to see inside; the
+mirrors and the beam path are drawn as ghosts in preview and never
+exported.
+
+Parameters that matter, at the top of `periscope.scad`:
 
 | Parameter | Meaning |
 |---|---|
-| `mirror_count` | `1` for the test rig, `2` for the corrected build |
-| `theta` | Your head pitch below horizontal, in degrees |
-| `mid_elevation` | Elevation of the ray between the two mirrors — the main shape knob. Higher = more aperture and field of view, but a taller device. See the design notes. |
-| `fold_axis` | Which mirror dimension takes the fold: `"length"` (160mm, max aperture, ~330mm tall) or `"width"` (100mm, smaller aperture, ~233mm tall) |
-| `eye_to_device` | Distance from your eye to the first mirror, mm |
-| `target_aperture` | Desired optical aperture, mm (clamped to what the mirror stock allows — check the console output) |
-| `mirror_stock_length` / `mirror_stock_width` / `mirror_thickness` | The mirror tile you're actually using |
-| `mirror_gap` | Mirror separation along the folded path; `0` auto-sizes it so the plates don't intersect |
-| `faceplate_spacing_x` / `faceplate_spacing_y` | Your stem's nominal faceplate bolt spacing |
-| `slot_play` | Extra travel added to the mounting slots to cover stem-to-stem variance |
-
-Rendering prints the derived optics (incidence angles, ideal vs.
-achievable aperture/mirror size, resulting FOV) to the console — check
-those numbers before printing. Export an STL with:
-
-```
-openscad -o periscope.stl periscope.scad                    # the periscope
-openscad -o testrig.stl  periscope.scad -D mirror_count=1   # the test rig
-```
+| `theta` | Your head pitch below horizontal, degrees. Measure it with the test box. |
+| `mid_elevation` | Direction of the ray between the two mirrors. Negative runs it down-and-back so the box hangs under the stem (default −135°). See the notes before touching this. |
+| `fold_axis` | Which side of the tile takes the fold. `"width"` (default) puts the 160mm side across the beam — wide view of the road, compact box. `"length"` gives more vertical aperture and a much bigger box. |
+| `box_x` / `box_z` | Where mirror 1 sits relative to the faceplate: forward and down. The console warns if the entry beam grazes the mount. |
+| `mirror_gap` | Mirror separation; `0` auto-sizes it to the minimum that lets the exit beam pass under mirror 1. |
+| `faceplate_spacing_h` / `_v` / `slot_play` | Your stem's bolt spacing and how much slot travel to allow. |
+| `wall` / `side_wall` / `groove_depth` | Box wall thicknesses and how deep the mirror edges seat. |
 
 ## Assembly
 
-The mirror slides into a captured channel on one open edge — no glue,
-and it's swappable. A small printed clip closes the open edge after
-insertion. The mount holes are slots, not fixed round holes, so the same
-bracket should fit stems with slightly different faceplate bolt spacing
-than the nominal values above; if it doesn't, adjust
-`faceplate_spacing_x/y` and re-render.
+The mirrors slide in from the side: each has a slot straight through the
++Y side wall and a matching groove in the opposite wall, so both mirrors
+are located by the same printed part and their roll axes stay parallel.
+Reflective face toward the windows. A printed cap covers each slot and
+its tab fills the outer part of the slot, holding the mirror to the same
+depth as the far groove — no glue anywhere. The mount is a vertical plate
+that goes under your stem's faceplate bolts; the holes are slots so it
+tolerates a range of bolt spacings.
 
-## Known limitation
+## Known limitations
 
-There's a blind band between the optic's near edge and where your
-unaided downward vision picks up — potholes and close obstacles arrive
-with little warning. This is a straight-road, steady-effort tool (time
-trial, aero position, headwind), not a substitute for looking up in
-traffic. See design notes for more.
+- There's a blind band between the optic's near edge and where your
+  unaided downward vision picks up — potholes and close obstacles arrive
+  with little warning. Straight-road, steady-effort tool; not a substitute
+  for looking up in traffic.
+- The exit window faces forward just above the front tire: it will
+  collect spray. A short printed hood, or just wiping it, is the answer.
+- The stock mirrors are longer than the beam needs at the second mirror,
+  which is why the box bulges at the corners. That's the cost of not
+  cutting mirrors.

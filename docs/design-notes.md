@@ -220,19 +220,29 @@ mirror:
 | 75° | 22.5° / 52.5° | 92mm | 10.5° | nearly straight up |
 | 90° | 15° / 45° | 107mm | 12.1° | straight up (vertical mast) |
 
-The consequence is unavoidable and worth internalizing before building:
-**a corrected-vision periscope has to be tall.** Any attempt to keep it
-low and forward drives mirror 2 toward grazing incidence and collapses the
-field of view to nothing. The model defaults to 75°.
+Two things follow. First, the device can't be *flat*: whichever way the
+middle leg runs, it has to run steeply, or one mirror goes grazing and the
+field of view collapses. Second — and this is the part that turns a
+ridiculous object into a usable one — **every solution has a mirror image.**
+Reversing the ray path (`mid_elevation` → −θ − `mid_elevation`) swaps the
+two incidence angles and flips the middle leg from up-and-forward to
+down-and-back. Same aperture, same field of view, but instead of a mast
+standing in front of the rider's face, the box hangs below and ahead of the
+stem — the out-front light zone above the tire, clear of hands and head.
+An earlier version of this model ran the leg upward and stood 330mm tall;
+the current one runs it down (default −135°) and hangs about 220mm below
+the faceplate.
 
 ### What it costs
 
-- **Volume roughly triples.** With the full 160mm stock mirror on the fold
-  axis, the seats are ~169mm long, so they need ~195mm of separation not
-  to intersect — putting mirror 2 about 190mm above mirror 1 and the whole
-  object ~330mm tall above the mount. Setting `fold_axis = "width"` puts
-  the 100mm side on the fold instead: ~233mm tall, at reduced aperture.
-  That tradeoff is the main thing to decide before printing.
+- **It's a real box.** The current build puts the tile's 100mm side on
+  the fold and the 160mm side across the beam, which is the right way
+  round for a road (you want width, not height) and roughly halves the
+  box. It comes out about 125mm long × 165mm wide × 220mm tall, hanging
+  from the faceplate down to ~210mm below it — a big front light, not a
+  mast. The box is the beam path with walls on it, not a convex blob
+  around the mirrors: three straight tube legs joined at the two mirror
+  pockets. Run the model to get the exact numbers for your θ.
 - **Weight**, hence thin (3mm) mirror stock rather than thicker acrylic —
   two 6mm mirrors at that size is ~200g on a long moment arm; 3mm gets
   that to ~100g, with the printed frame supporting the mirror at three
