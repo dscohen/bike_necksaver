@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# OpenSCAD / CAD build artifacts
+*.scad~
+*.scad.bak
+*.stl
+*.3mf
+*.png
+!docs/**/*.png
