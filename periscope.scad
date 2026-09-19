@@ -3,13 +3,16 @@
 // Parametric bike periscope housing.
 //
 // Background / derivation: see docs/design-notes.md. Short version:
+//   - mirror_count = 2 (DEFAULT): the actual periscope. Two reflections =
+//     even parity, so the vertical orientation comes back correct. This is
+//     the build.
 //   - mirror_count = 1: single mirror test rig. Bends the sightline by
 //     theta correctly, but a single reflection INVERTS the vertical image
-//     (near road at top, horizon at bottom). It exists to find out whether
-//     that's adaptable, and to measure your real head pitch before
-//     committing to the two-mirror build.
-//   - mirror_count = 2: "normal vision" build. Two reflections = even
-//     parity, so vertical orientation comes back correct.
+//     (near road at top, horizon at bottom). No mounting trick avoids this
+//     -- head orientation has nothing to do with parity, and buying an
+//     even-reflection prism instead is a dead end on weight (see the notes).
+//     So the rig is only for finding out whether a rider can ADAPT to an
+//     inverted image, and for measuring real head pitch to feed theta.
 //
 // Geometry convention: X = forward (direction of travel), Y = left, Z = up,
 // matching the bike when upright. Everything is derived by tracing the
@@ -35,7 +38,7 @@
 // same bracket tolerates faceplate-to-faceplate variation in bolt spacing.
 
 /* [Optics] */
-mirror_count    = 1;    // [1, 2] -- 1 = test rig, 2 = inversion-corrected
+mirror_count    = 2;    // [2, 1] -- 2 = the periscope, 1 = inverting test rig
 theta           = 60;   // deg, head pitch below horizontal
 eye_to_device   = 500;  // mm, eye to first mirror
 target_aperture = 75;   // mm, desired optical aperture (clamped to mirror stock)

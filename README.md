@@ -10,10 +10,16 @@ corrected version.
 
 ## Status
 
-- **v1 — single-mirror test rig.** Answers the one question the math
-  can't: whether you can adapt to the vertical image inversion a single
-  reflection produces. Also used to measure your real head-pitch angle
-  (θ), which sets every dimension in v2.
+The two-mirror periscope (`mirror_count = 2`) is the design and the
+default. A single reflection always inverts the vertical image, no
+mounting trick avoids it, and buying a ready-made even-reflection prism
+instead turns out to be a dead end on weight — both investigated and
+written up in the design notes.
+
+- **v1 — single-mirror test rig** (`mirror_count = 1`). Not a candidate
+  design. It answers the one question the math can't — whether you can
+  *adapt* to the vertical inversion — and it's how you measure your real
+  head-pitch angle (θ), which sets every dimension in v2.
 - **v2 — two-mirror periscope.** Corrects the inversion, at the cost of
   roughly 3x the volume and tighter build tolerances. Not yet built —
   waiting on a measured θ from the v1 rig. Be aware going in that a
@@ -62,7 +68,8 @@ achievable aperture/mirror size, resulting FOV) to the console — check
 those numbers before printing. Export an STL with:
 
 ```
-openscad -o periscope.stl periscope.scad -D mirror_count=1
+openscad -o periscope.stl periscope.scad                    # the periscope
+openscad -o testrig.stl  periscope.scad -D mirror_count=1   # the test rig
 ```
 
 ## Assembly
