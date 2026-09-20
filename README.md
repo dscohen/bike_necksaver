@@ -23,6 +23,56 @@ default. Nothing has been printed yet.
   of the real thing.
 - **The periscope** (`mirror_count = 2`). Waiting on a measured θ.
 
+## Before you print anything
+
+Four inputs in `periscope.scad` are currently guesses, and every dimension
+of the box follows from them. Work through these in order — the first
+three are free, and the fourth costs about a dollar.
+
+**1. Measure your head pitch (θ).** No printing needed. Have someone shoot
+a phone video from directly beside you while you ride your actual
+position, freeze a frame, and measure the angle of your line of sight
+below horizontal. Set `theta` to that. Everything else in the model is
+derived from it, so a guess here means reprinting.
+
+**2. Caliper your stem faceplate.** Measure both bolt spacings — left-right
+and top-bottom — and set `faceplate_spacing_h` and `faceplate_spacing_v`.
+Note the mounting slots only flex left-right (`slot_play`, ±3mm default);
+vertical spacing has no adjustment, so it has to be right.
+
+**3. Buy the mirror tiles first and measure them.** Set `mirror_thickness`
+to what you actually have, not the assumed 3mm. Too thin and the mirror
+rattles in its slot; too thick and it won't go in.
+
+**4. Build the cardboard mockup.** This is the step worth insisting on —
+it costs a sheet of cardboard and half an hour, against a ~133 × 167 ×
+235 mm print if you get it wrong.
+
+```
+openscad -o template.svg -D 'part="template"' periscope.scad
+```
+
+Print that **at 100% / "Actual Size" — not "Fit to Page"** (A4, or Letter
+with 0.25in margins). Measure the printed ruler: if it isn't 100mm, your
+printer rescaled it and the template is useless. Then spray-glue it to
+cardboard, cut **two** identical side panels, space them the distance
+printed on the template (155mm by default), and tape your actual mirror
+tiles along the M1 and M2 lines with the reflective faces toward the light
+path. The thin lines are the beam — keep them clear; there's nothing to
+cut out, since the mockup's edges are already open.
+
+Then hold it against the bike and answer three questions the CAD can't:
+
+- **Does it physically fit?** The box hangs ~208mm below the faceplate and
+  reaches ~131mm forward, which puts it over the front tire. Check tire
+  clearance, cable routing, and whether it fouls your knees out of the
+  saddle.
+- **Can you see anything useful?** Get in your riding position and look
+  down into the entry. You should see the road ahead, right way up.
+- **Is the blind band tolerable?** See Known limitations below.
+
+Only then print.
+
 ## Bill of materials
 
 - 2x (or 1x for the test box) **acrylic mirror tile, 160mm × 100mm
@@ -44,7 +94,14 @@ clears the mount. Read those before printing anything.
 openscad -o periscope.stl periscope.scad                       # the box
 openscad -o caps.stl      periscope.scad -D 'part="caps"'      # the two caps
 openscad -o testbox.stl   periscope.scad -D mirror_count=1     # the test box
+openscad -o template.svg  periscope.scad -D 'part="template"'  # 1:1 paper template
 ```
+
+**Print orientation matters.** The box is a straight extrusion along one
+axis, so laid on a side wall it prints with **no supports at all** — every
+layer is the same cross-section. Tell your print service to orient it that
+way (167mm tall, 133 × 235mm footprint). Printed upright instead, it needs
+supports inside a sealed tube that you cannot reach through a 61mm window.
 
 Set `cutaway = true` in the file (preview mode, F5) to see inside; the
 mirrors and the beam path are drawn as ghosts in preview and never

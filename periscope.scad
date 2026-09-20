@@ -68,7 +68,7 @@ faceplate_spacing_v = 32;  // mm, up-down bolt spacing
 slot_play           = 6;   // mm, extra left-right travel per slot
 
 /* [Output] */
-part         = "assembly"; // ["assembly","box","caps"]
+part         = "assembly"; // ["assembly","box","caps","template"]
 show_mirrors = true;       // preview only (not exported)
 show_beam    = true;       // preview only (not exported)
 cutaway      = false;      // slice the assembly at y=0 to see inside
@@ -313,6 +313,71 @@ module ghosts() {
 }
 
 // ---------------------------------------------------------------------
+// Paper template -- 1:1 side panel for the cardboard mockup.
+//
+//   openscad -o template.svg -D 'part="template"' periscope.scad
+//
+// Print at 100% / "actual size" (NOT "fit to page"), check the ruler,
+// glue to cardboard, cut two panels, tape the mirrors along the marked
+// lines, and hold the result against the bike before spending money on
+// a print. Rider is to the LEFT, road to the RIGHT.
+// ---------------------------------------------------------------------
+
+line_w = 0.5;
+
+module stroke(w = line_w)
+    difference() {
+        offset(delta =  w/2) children();
+        offset(delta = -w/2) children();
+    }
+
+module label(p, s, sz = 5) translate(p) text(s, size = sz, halign = "center");
+
+module ruler(len = 100) {
+    square([len, 1.1]);
+    for (i = [0 : 10 : len]) translate([i - 0.55, 0]) square([1.1, 3.5]);
+}
+
+module template2d() {
+    // Cut line.
+    stroke(0.9) shell2d();
+
+    // Mirror positions: tape a tile along each line, reflective side toward
+    // the beam. These also show the tile is longer than the beam is wide.
+    stroke(0.7) mirror_slot2d(c1, n1);
+    if (two) stroke(0.7) mirror_slot2d(c2, n2);
+
+    // The beam itself: everything inside these channels must stay clear,
+    // and where a channel meets the cut line is a window to open up.
+    stroke(0.35) intersection() { bar2d(entry_c, d_in, snout + 2 * h1, aperture); shell2d(); }
+    if (two) stroke(0.35) intersection() { bar2d(c1, d_mid, gap, aperture); shell2d(); }
+    stroke(0.35) intersection() { bar2d(cL, d_out, exit_c[0] - cL[0] + h1 + 2, aperture); shell2d(); }
+
+    // Where the stem faceplate sits, for holding the mockup up to the bike.
+    stroke(0.35) rect2d([-box_x, -box_z - plate_h/2], [-box_x + mount_t, -box_z + plate_h/2]);
+
+    label(entry_c - 17 * d_in, "ENTRY");
+    label(c1 + 13 * n1, "M1");
+    if (two) label(c2 + 13 * n2, "M2");
+    label([exit_c[0] - 22, cL[1] - aperture/2 - 11], "EXIT");
+    label([-box_x + 4, -box_z + plate_h/2 + 6], "faceplate", 4);
+
+    translate([env_x[0], env_z[0] - 5]) {
+        ruler();
+        translate([0, -5])
+            text("100 mm -- reprint at 100%, not Fit to Page, if this is short",
+                 size = 3.6);
+        translate([0, -9.5])
+            text("outline = cut   |   M1 / M2 = tape a mirror here   |   thin = light path",
+                 size = 3.6);
+        translate([0, -14])
+            text(str("cut 2 panels  |  space them ", cavity_y, " mm apart  |  theta ",
+                     theta, "  |  mirrors ", mirror_count, "  |  rider at left"),
+                 size = 3.6);
+    }
+}
+
+// ---------------------------------------------------------------------
 // Output
 // ---------------------------------------------------------------------
 
@@ -332,6 +397,8 @@ if (part == "assembly") {
     translate([box_x, 0, box_z]) ghosts();
 } else if (part == "box") {
     box();
-} else {
+} else if (part == "caps") {
     caps_flat();
+} else {
+    template2d();
 }
